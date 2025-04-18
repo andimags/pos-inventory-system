@@ -14,12 +14,10 @@ import {
     SquareTerminal,
     User2
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, redirect } from 'next/navigation';
 import * as React from 'react';
 
 import { NavMain } from '@/components/nav-main';
-import { NavProjects } from '@/components/nav-projects';
-import { NavUser } from '@/components/nav-user';
 import { TeamSwitcher } from '@/components/team-switcher';
 import {
     Sidebar,
@@ -31,13 +29,13 @@ import {
     SidebarMenuItem,
     SidebarRail
 } from '@/components/ui/sidebar';
-import ModeToggle from './ui/modeToggle';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from './ui/dropdown-menu';
+import ModeToggle from './ui/modeToggle';
 
 // This is sample data.
 const data = {
@@ -66,9 +64,9 @@ const data = {
     navMain: [
         {
             title: 'Discount Types',
-            url: '#',
+            url: '/discount-types',
             icon: SquareTerminal,
-            isActive: true,
+            isActive: true
             // items: [
             //     {
             //         title: 'History',

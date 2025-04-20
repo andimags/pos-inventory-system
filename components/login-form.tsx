@@ -1,4 +1,5 @@
-import { cn } from '@/lib/utils';
+'use client';
+
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -9,11 +10,62 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import auth from '@/lib/api/auth';
+import { cn } from '@/lib/utils';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { ChangeEvent, useEffect, useState } from 'react';
+import LoadingSpinner from './ui/loading-spinner';
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<'div'>) {
+    const router = useRouter();
+
+    interface ILoginData {
+        email: string;
+        password: string;
+    }
+
+    const [loginData, setLoginData] = useState<ILoginData>({
+        email: '',
+        password: ''
+    });
+
+    const [errors, setErrors] = useState({
+        email: [],
+        password: []
+    });
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        console.log(errors);
+    }, [errors])
+
+    const loginHandler = async (e: ChangeEvent<HTMLInputElement>) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        try {
+            const response = await auth.login(loginData);
+
+            if(response.data.status){
+                router.push('/discount-types');
+            }
+        } catch (error) {
+            setIsLoading(false);
+
+            if (axios.isAxiosError(error) && error.status == 400) {
+                const errors = error.response?.data.errors;
+                setErrors(errors);
+            } else {
+                console.log('Unexpected error:', error);
+            }
+        }
+    };
+
     return (
         <div
             className={cn('flex flex-col gap-6', className)}
@@ -35,8 +87,17 @@ export function LoginForm({
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="m@example.com"
                                     required
+                                    value={loginData.email}
+                                    onChange={(
+                                        e: ChangeEvent<HTMLInputElement>
+                                    ) => {
+                                        setLoginData({
+                                            ...loginData,
+                                            email: e.target.value
+                                        });
+                                    }}
+                                    errors={errors.email}
                                 />
                             </div>
                             <div className="grid gap-3">
@@ -55,14 +116,25 @@ export function LoginForm({
                                     id="password"
                                     type="password"
                                     required
+                                    value={loginData.password}
+                                    onChange={(
+                                        e: ChangeEvent<HTMLInputElement>
+                                    ) => {
+                                        setLoginData({
+                                            ...loginData,
+                                            password: e.target.value
+                                        });
+                                    }}
+                                    errors={errors.password}
                                 />
                             </div>
                             <div className="flex flex-col gap-3">
                                 <Button
                                     type="submit"
                                     className="w-full"
+                                    onClick={loginHandler}
                                 >
-                                    Login
+                                    Login {isLoading ? <LoadingSpinner></LoadingSpinner> : ""}
                                 </Button>
                                 <Button
                                     variant="outline"

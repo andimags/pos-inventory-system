@@ -1,5 +1,10 @@
 'use client';
 
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle
+} from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -13,53 +18,79 @@ import { Label } from '@/components/ui/label';
 import auth from '@/lib/api/auth';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
+import { Terminal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 import LoadingSpinner from './ui/loading-spinner';
+
+interface ILoginData {
+    email: string;
+    password: string;
+}
+
+interface IValidationErrors {
+    email: string[],
+    password: string[]
+}
+
+interface IError {
+    status: number | null,
+    message: string
+}
+
+const loginDataInitialState: ILoginData = {
+    email: '',
+    password: ''
+}
+
+const validationErrorsInitialState: IValidationErrors = {
+    email: [],
+    password: []
+}
+
+const errorInitialState: IError = {
+    status: null,
+    message: ""
+}
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<'div'>) {
     const router = useRouter();
-
-    interface ILoginData {
-        email: string;
-        password: string;
-    }
-
-    const [loginData, setLoginData] = useState<ILoginData>({
-        email: '',
-        password: ''
-    });
-
-    const [errors, setErrors] = useState({
-        email: [],
-        password: []
-    });
+    const [loginData, setLoginData] = useState<ILoginData>(loginDataInitialState);
+    const [validationErrors, setValidationErrors] = useState(validationErrorsInitialState);
+    const [error, setError] = useState<IError>(errorInitialState);
 
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        console.log(errors);
-    }, [errors])
+        console.log(validationErrors);
+    }, [validationErrors]);
 
     const loginHandler = async (e: ChangeEvent<HTMLInputElement>) => {
         e.preventDefault();
+        setError(errorInitialState);
+        setValidationErrors(validationErrorsInitialState);
         setIsLoading(true);
 
         try {
             const response = await auth.login(loginData);
 
-            if(response.data.status){
+            if (response.data.status) {
                 router.push('/discount-types');
             }
         } catch (error) {
             setIsLoading(false);
 
-            if (axios.isAxiosError(error) && error.status == 400) {
-                const errors = error.response?.data.errors;
-                setErrors(errors);
+            if (axios.isAxiosError(error)) {
+                if (error.status == 400) {
+                    const validationErrors =
+                        error.response?.data.errors;
+                    setValidationErrors(validationErrors);
+                } else if (error.status == 401) {
+                    setError(error.response?.data);
+                }
             } else {
                 console.log('Unexpected error:', error);
             }
@@ -97,7 +128,7 @@ export function LoginForm({
                                             email: e.target.value
                                         });
                                     }}
-                                    errors={errors.email}
+                                    errors={validationErrors.email}
                                 />
                             </div>
                             <div className="grid gap-3">
@@ -125,16 +156,32 @@ export function LoginForm({
                                             password: e.target.value
                                         });
                                     }}
-                                    errors={errors.password}
+                                    errors={validationErrors.password}
                                 />
+
+                                {error && error.status == 0 && (
+                                    <Alert variant="destructive">
+                                        <Terminal className="h-4 w-4" />
+                                        <AlertTitle>Error</AlertTitle>
+                                        <AlertDescription>
+                                            {error.message}
+                                        </AlertDescription>
+                                    </Alert>
+                                )}
                             </div>
+
                             <div className="flex flex-col gap-3">
                                 <Button
                                     type="submit"
                                     className="w-full"
                                     onClick={loginHandler}
                                 >
-                                    Login {isLoading ? <LoadingSpinner></LoadingSpinner> : ""}
+                                    Login{' '}
+                                    {isLoading ? (
+                                        <LoadingSpinner></LoadingSpinner>
+                                    ) : (
+                                        ''
+                                    )}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -147,7 +194,7 @@ export function LoginForm({
                         <div className="mt-4 text-center text-sm">
                             Don&apos;t have an account?{' '}
                             <a
-                                href="#"
+                                href="#test"
                                 className="underline underline-offset-4"
                             >
                                 Sign up

@@ -29,37 +29,41 @@ interface ILoginData {
 }
 
 interface IValidationErrors {
-    email: string[],
-    password: string[]
+    email: string[];
+    password: string[];
 }
 
 interface IError {
-    status: number | null,
-    message: string
+    status: number | null;
+    message: string;
 }
 
 const loginDataInitialState: ILoginData = {
     email: '',
     password: ''
-}
+};
 
 const validationErrorsInitialState: IValidationErrors = {
     email: [],
     password: []
-}
+};
 
 const errorInitialState: IError = {
     status: null,
-    message: ""
-}
+    message: ''
+};
 
 export function LoginForm({
     className,
     ...props
 }: React.ComponentProps<'div'>) {
     const router = useRouter();
-    const [loginData, setLoginData] = useState<ILoginData>(loginDataInitialState);
-    const [validationErrors, setValidationErrors] = useState(validationErrorsInitialState);
+    const [loginData, setLoginData] = useState<ILoginData>(
+        loginDataInitialState
+    );
+    const [validationErrors, setValidationErrors] = useState(
+        validationErrorsInitialState
+    );
     const [error, setError] = useState<IError>(errorInitialState);
 
     const [isLoading, setIsLoading] = useState(false);

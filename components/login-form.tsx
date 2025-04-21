@@ -76,7 +76,7 @@ export function LoginForm({
 
         try {
             const response = await auth.login(loginData);
-
+            console.log(response.data);
             if (response.data.status) {
                 router.push('/discount-types');
             }
